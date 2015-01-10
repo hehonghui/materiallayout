@@ -39,7 +39,8 @@ MaterialLayout
 
 </org.simple.MaterialLayout>	
 ```     
-	注意不要com.example.materialdemo替换为你工程的包名。   
-	运行一下就可以看到效果了。       
-	<img src="http://img.blog.csdn.net/20150110214259223" width="200" height="320" />
+
+   注意不要com.example.materialdemo替换为你工程的包名。      
+   运行一下就可以看到效果了。         
+   <img src="http://img.blog.csdn.net/20150110214259223" width="200" height="320" />
 	
