@@ -1,18 +1,21 @@
 <org.simple.MaterialLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:ml="http://schemas.android.com/org.simple.materiallayout"
+    xmlns:ml="http://schemas.android.com/apk/res/com.example.materialdemo"
     android:id="@+id/layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_margin="5dp"
+    android:background="#f0f0f0"
     android:gravity="center"
-    ml:scale="0.3"
-    ml:color="#ff0000" >
+    ml:duration="200"
+    ml:alpha="200"
+    ml:scale="1.2"
+    ml:color="#FFD306" >
 
     <Button
         android:id="@+id/my_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="#00aa00"
+        android:background="#33CC99"
         android:padding="10dp"
         android:text="@string/click"
         android:textSize="20sp" />
@@ -23,7 +26,7 @@
         android:layout_height="100dp"
         android:layout_below="@id/my_button"
         android:layout_marginTop="30dp"
-        android:background="#aa0000"
+        android:background="#33CC99"
         android:contentDescription="@string/app_name"
         android:padding="10dp"
         android:src="@drawable/ic_launcher" />

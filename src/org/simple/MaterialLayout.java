@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Robin Chutaux
+ * Copyright (c) 2015 bboyfeiyu@gmail.com ( mr.simple )
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,13 +41,16 @@ import android.widget.RelativeLayout;
 import org.simple.materiallayout.R;
 
 /**
+ * MaterialLayout是模拟Android 5.0中View被点击的波纹效果的布局，与其他的模拟Material
+ * Desigin效果的View不同，所有在MaterialLayout布局下的子视图被点击时都会产生波纹效果,而不是某个特定的View才会有这样的效果.
+ * 
  * @author mrsimple
  */
 public class MaterialLayout extends RelativeLayout {
 
     private static final int DEFAULT_RADIUS = 10;
     private static final int DEFAULT_FRAME_RATE = 10;
-    private static final int DEFAULT_DURATION = 150;
+    private static final int DEFAULT_DURATION = 200;
     private static final int DEFAULT_ALPHA = 255;
     private static final float DEFAULT_SCALE = 0.8f;
     private static final int DEFAULT_ALPHA_STEP = 5;
@@ -80,8 +83,22 @@ public class MaterialLayout extends RelativeLayout {
      * 最大的半径
      */
     private int mMaxRadius = DEFAULT_RADIUS;
+
     /**
-     * 圆形半径针对于被点击视图的缩放比例,默认为0.6
+     * 渐变的背景色
+     */
+    private int mCirclelColor = Color.LTGRAY;
+    /**
+     * 每次重绘时半径的增幅
+     */
+    private int mRadiusStep = 1;
+    /**
+     * 保存用户设置的alpha值
+     */
+    private int mBackupAlpha;
+
+    /**
+     * 圆形半径针对于被点击视图的缩放比例,默认为0.8
      */
     private float mCircleScale = DEFAULT_SCALE;
     /**
@@ -92,14 +109,6 @@ public class MaterialLayout extends RelativeLayout {
      * 每次动画Alpha的渐变递减值
      */
     private int mAlphaStep = DEFAULT_ALPHA_STEP;
-    /**
-     * 渐变的背景色
-     */
-    private int mCirclelColor = Color.LTGRAY;
-    /**
-     * 每次重绘时半径的增幅
-     */
-    private int mRadiusStep = 1;
 
     /**
      * @param context
@@ -144,9 +153,8 @@ public class MaterialLayout extends RelativeLayout {
         mColorAlpha = typedArray.getInteger(R.styleable.MaterialLayout_alpha, DEFAULT_ALPHA);
         mCircleScale = typedArray.getFloat(R.styleable.MaterialLayout_scale, DEFAULT_SCALE);
 
-        Log.e(VIEW_LOG_TAG, " color : " + (mCirclelColor == Color.LTGRAY));
-        Log.e(VIEW_LOG_TAG, "### scale : " + mCircleScale);
         typedArray.recycle();
+
     }
 
     private void initPaint() {
@@ -154,6 +162,9 @@ public class MaterialLayout extends RelativeLayout {
         mPaint.setStyle(Paint.Style.FILL);
         mPaint.setColor(mCirclelColor);
         mPaint.setAlpha(mColorAlpha);
+
+        // 备份alpha属性用于动画完成时重置
+        mBackupAlpha = mColorAlpha;
     }
 
     /**
@@ -214,14 +225,17 @@ public class MaterialLayout extends RelativeLayout {
         int maxLength = Math.max(view.getWidth(), view.getHeight());
         // 计算Ripple圆形的半径
         mMaxRadius = (int) ((maxLength / 2) * mCircleScale);
+
+        int redrawCount = mDuration / mFrameRate;
         // 计算每次动画半径的增值
-        mRadiusStep = (mMaxRadius) / (mDuration / mFrameRate);
-        mAlphaStep = (mMaxRadius) / (mDuration / mFrameRate);
+        mRadiusStep = (mMaxRadius - DEFAULT_RADIUS) / redrawCount;
+        // 计算每次alpha递减的值
+        mAlphaStep = (mColorAlpha - 100) / redrawCount;
     }
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
-
+        Log.d(VIEW_LOG_TAG, "touch : " + this);
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
             View touchView = findTargetView(this, event.getX(), event.getY());
             if (touchView != null) {
@@ -238,12 +252,13 @@ public class MaterialLayout extends RelativeLayout {
     @Override
     protected void dispatchDraw(Canvas canvas) {
         super.dispatchDraw(canvas);
-        // 绘制Ripple
+        // 绘制Circle
         drawRippleIfNecessary(canvas);
     }
 
     private void drawRippleIfNecessary(Canvas canvas) {
         if (isFoundTouchedSubView()) {
+            // 计算新的半径和alpha值
             mRadius += mRadiusStep;
             mColorAlpha -= mAlphaStep;
 
@@ -287,16 +302,9 @@ public class MaterialLayout extends RelativeLayout {
     private void reset() {
         mCenterPoint = null;
         mTargetRectf = null;
-        mRadius = 10;
-        mColorAlpha = 150;
+        mRadius = DEFAULT_RADIUS;
+        mColorAlpha = mBackupAlpha;
         invalidate();
-    }
-
-    @Override
-    public String toString() {
-        return "MaterialLayout [ mCenterPoint=" + mCenterPoint
-                + ", mTargetRectf=" + mTargetRectf + ", mRadius=" + mRadius + ", maxRadius="
-                + mMaxRadius + "]";
     }
 
 }
