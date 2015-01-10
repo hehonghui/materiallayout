@@ -1,0 +1,31 @@
+<org.simple.MaterialLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:ml="http://schemas.android.com/org.simple.materiallayout"
+    android:id="@+id/layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="5dp"
+    android:gravity="center"
+    ml:scale="0.3"
+    ml:color="#ff0000" >
+
+    <Button
+        android:id="@+id/my_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#00aa00"
+        android:padding="10dp"
+        android:text="@string/click"
+        android:textSize="20sp" />
+
+    <ImageView
+        android:id="@+id/my_imageview1"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_below="@id/my_button"
+        android:layout_marginTop="30dp"
+        android:background="#aa0000"
+        android:contentDescription="@string/app_name"
+        android:padding="10dp"
+        android:src="@drawable/ic_launcher" />
+
+</org.simple.MaterialLayout>
