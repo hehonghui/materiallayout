@@ -3,5 +3,6 @@
 
     <string name="app_name">MaterialDemo</string>
     <string name="click">点击一下</string>
+    <string name="text">TextView In ViewGroup</string>
 
 </resources>

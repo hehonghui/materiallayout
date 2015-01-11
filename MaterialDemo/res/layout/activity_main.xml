@@ -3,12 +3,11 @@
     android:id="@+id/layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_margin="5dp"
     android:background="#f0f0f0"
     android:gravity="center"
-    ml:duration="200"
     ml:alpha="200"
-    ml:scale="1.2"
+    ml:duration="200"
+    ml:scale="1.1"
     ml:color="#FFD306" >
 
     <Button
@@ -30,5 +29,32 @@
         android:contentDescription="@string/app_name"
         android:padding="10dp"
         android:src="@drawable/ic_launcher" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/my_imageview1"
+        android:layout_marginTop="20dp"
+        android:background="#33CC99"
+        android:padding="3dp" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#f0f0f0"
+            android:text="@string/text"
+            android:textSize="20sp" />
+
+        <ImageView
+            android:id="@+id/my_imageview2"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="30dp"
+            android:background="#33aa66"
+            android:contentDescription="@string/app_name"
+            android:padding="10dp"
+            android:src="@drawable/ic_launcher" />
+    </LinearLayout>
 
 </org.simple.MaterialLayout>

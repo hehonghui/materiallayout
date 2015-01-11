@@ -32,7 +32,6 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.RectF;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -110,6 +109,8 @@ public class MaterialLayout extends RelativeLayout {
      */
     private int mAlphaStep = DEFAULT_ALPHA_STEP;
 
+    private View mTargetView;
+
     /**
      * @param context
      */
@@ -176,28 +177,39 @@ public class MaterialLayout extends RelativeLayout {
      * @return 如果点击的坐标在该view内则返回true,否则返回false
      */
     private boolean isInFrame(View touchView, float x, float y) {
-        int left = touchView.getLeft();
-        int top = touchView.getTop();
-        int right = touchView.getRight();
-        int bottom = touchView.getBottom();
-        return x >= left && x <= right && y >= top && y <= bottom;
+        initViewRect(touchView);
+        return mTargetRectf.contains(x, y);
     }
 
     /**
-     * 获取View的中心点左边
+     * 获取点中的区域,屏幕绝对坐标值,这个高度值也包含了状态栏和标题栏高度
      * 
-     * @param view 目标View
-     * @return 中心点
+     * @param touchView
      */
-    private Point getViewCenterPoint(View view) {
-        int left = view.getLeft();
-        int top = view.getTop();
-        int right = view.getRight();
-        int bottom = view.getBottom();
+    private void initViewRect(View touchView) {
+        int[] location = new int[2];
+        touchView.getLocationOnScreen(location);
+        // 视图的区域
+        mTargetRectf = new RectF(location[0], location[1], location[0]
+                + touchView.getWidth(), location[1] + touchView.getHeight());
 
-        mTargetRectf = new RectF(left, top, right, bottom);
-        mCenterPoint = new Point((right + left) / 2, (top + bottom) / 2);
-        return mCenterPoint;
+    }
+
+    /**
+     * 减去状态栏和标题栏的高度
+     */
+    private void removeExtraHeight() {
+        int[] location = new int[2];
+        this.getLocationOnScreen(location);
+        // 减去两个该布局的top,这个top值就是状态栏的高度
+        mTargetRectf.top -= location[1];
+        mTargetRectf.bottom -= location[1];
+        // 计算中心点坐标
+        int centerHorizontal = (int) (mTargetRectf.left + mTargetRectf.right) / 2;
+        int centerVertical = (int) ((mTargetRectf.top + mTargetRectf.bottom) / 2);
+        // 获取中心点
+        mCenterPoint = new Point(centerHorizontal, centerVertical);
+
     }
 
     private View findTargetView(ViewGroup viewGroup, float x, float y) {
@@ -205,9 +217,8 @@ public class MaterialLayout extends RelativeLayout {
         // 迭代查找被点击的目标视图
         for (int i = 0; i < childCount; i++) {
             View childView = viewGroup.getChildAt(i);
-            // 如果是ViewGroup,那么深入查找其子视图
             if (childView instanceof ViewGroup) {
-                findTargetView(viewGroup, x, y);
+                return findTargetView((ViewGroup) childView, x, y);
             } else if (isInFrame(childView, x, y)) { // 否则判断该点是否在该View的frame内
                 return childView;
             }
@@ -233,19 +244,29 @@ public class MaterialLayout extends RelativeLayout {
         mAlphaStep = (mColorAlpha - 100) / redrawCount;
     }
 
-    @Override
-    public boolean onInterceptTouchEvent(MotionEvent event) {
-        Log.d(VIEW_LOG_TAG, "touch : " + this);
+    /**
+     * 处理ACTION_DOWN触摸事件, 注意这里获取的是Raw x, y,
+     * 即屏幕的绝对坐标,但是这个当屏幕中有状态栏和标题栏时就需要去掉这些高度,因此得到mTargetRectf后其高度需要减去该布局的top起点
+     * ，也就是标题栏和状态栏的总高度.
+     * 
+     * @param event
+     */
+    private void deliveryTouchDownEvent(MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            View touchView = findTargetView(this, event.getX(), event.getY());
-            if (touchView != null) {
-                mCenterPoint = getViewCenterPoint(touchView);
+            mTargetView = findTargetView(this, event.getRawX(), event.getRawY());
+            if (mTargetView != null) {
+                removeExtraHeight();
                 // 计算相关数据
-                calculateMaxRadius(touchView);
+                calculateMaxRadius(mTargetView);
                 // 重绘视图
                 invalidate();
             }
         }
+    }
+
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent event) {
+        deliveryTouchDownEvent(event);
         return super.onInterceptTouchEvent(event);
     }
 
@@ -296,7 +317,7 @@ public class MaterialLayout extends RelativeLayout {
      * @return
      */
     private boolean isFoundTouchedSubView() {
-        return mCenterPoint != null && mTargetRectf != null;
+        return mCenterPoint != null && mTargetView != null;
     }
 
     private void reset() {
@@ -304,6 +325,7 @@ public class MaterialLayout extends RelativeLayout {
         mTargetRectf = null;
         mRadius = DEFAULT_RADIUS;
         mColorAlpha = mBackupAlpha;
+        mTargetView = null;
         invalidate();
     }
 
